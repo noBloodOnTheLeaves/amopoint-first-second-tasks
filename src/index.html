@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Тестовое задание - Загрузка файла</title>
+    <link rel="stylesheet" type="text/css" href="./css/index.css">
+</head>
+<body>
+<h1>Загрузка файла и подсчет чисел в строках</h1>
+<form>
+    <label for="file">Выберите файл:</label>
+    <input type="file" id="file" name="file"><br><br>
+    <input type="button" value="Загрузить" onclick="uploadFile()">
+</form>
+<div class="circle"><p class="message"></p></div>
+<div class="result"></div>
+<script>
+    function uploadFile() {
+        const input = document.getElementById("file");
+        const file = input.files[0];
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const circle = document.querySelector(".circle");
+        const message = document.querySelector(".message");
+        const result = document.querySelector(".result");
+
+        circle.style.display = "block";
+        circle.classList.remove("success", "error");
+        result.style.display = "none";
+        result.innerHTML = "";
+        message.innerHTML = "";
+
+        fetch("/upload.php", {
+            method: "POST",
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    circle.classList.add("success");
+                    message.innerHTML = data.message;
+                    if(data?.parseFile !== undefined && data.parseFile.length > 0) {
+                        result.style.display = "block";
+                        result.innerHTML = "<ul>" +
+                            data.parseFile.map(item => "<li>" + item + "</li>").join("") +
+                            "</ul>";
+                    }
+                } else {
+                    circle.classList.add("error");
+                    message.innerHTML = data.message;
+                }
+            })
+            .catch(error => {
+                circle.classList.add("error");
+                message.innerHTML = error.message;
+            });
+    }
+</script>
+</body>
+</html>
